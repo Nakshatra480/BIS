@@ -29,8 +29,13 @@ async function getStandards(): Promise<StandardSummary[]> {
         chunkCount: d.chunks.length,
       }));
     }
-  } catch {
-    // Database not configured or unreachable; fallback to static verified dataset
+  } catch (err) {
+    // Database not configured, unreachable, or the live schema has drifted
+    // from src/db/schema.ts (this exact case silently served a 6-year-old
+    // 48-item fixture in place of real ingested evidence until caught).
+    // Falling back to the static dataset is the right resilience choice;
+    // doing it silently is not, so this stays visible in server logs.
+    console.error("[standards] DB query failed, falling back to static dataset:", err instanceof Error ? err.message : err);
   }
 
   // Fallback: Load authentic verified dataset from qco-standards.json

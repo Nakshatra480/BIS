@@ -41,8 +41,9 @@ async function getStandard(id: string): Promise<StandardDetail | null> {
         chunks: doc.chunks.map((c) => ({ ...c, createdAt: c.createdAt.toISOString() })),
       };
     }
-  } catch {
-    // Fallback to static verified dataset
+  } catch (err) {
+    // Same failure mode as src/app/standards/page.tsx — see the comment there.
+    console.error(`[standards/${id}] DB query failed, falling back to static dataset:`, err instanceof Error ? err.message : err);
   }
 
   // 2. Fallback to the fact-checked dataset (data/bis-standards-dataset/README.md)
