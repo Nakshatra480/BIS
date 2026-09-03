@@ -145,16 +145,23 @@ export function HomeClient() {
           </>
         )}
 
+        {/* Results use the same 1380px content grid as the header and footer,
+            so the page lines up with the rest of the site instead of sitting
+            in a narrow column with empty margins on a desktop screen. */}
         {!showHomepage && (
-          <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-14">
-            <SearchHero
-              key={activeQuery}
-              onSubmit={runQuery}
-              loading={loading}
-              compact
-              initialValue={activeQuery}
-              onClear={handleClearResults}
-            />
+          <div className="mx-auto max-w-[1380px] px-4 py-8 sm:px-6 sm:py-12">
+            {/* The search control keeps a comfortable width of its own — a
+                single input stretched across the full grid reads as unfinished. */}
+            <div className="max-w-3xl">
+              <SearchHero
+                key={activeQuery}
+                onSubmit={runQuery}
+                loading={loading}
+                compact
+                initialValue={activeQuery}
+                onClear={handleClearResults}
+              />
+            </div>
 
             {loading && (
               <div className="mt-8">
@@ -173,7 +180,9 @@ export function HomeClient() {
                 <section className="flex flex-col gap-3 rounded-lg border border-border bg-surface-raised p-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:p-5">
                   <div className="min-w-0">
                     <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Summary</h2>
-                    <p className="mt-2 text-[15px] leading-relaxed text-ink">{result.answer}</p>
+                    {/* Card fills the grid, but the prose stays at a readable
+                        measure rather than running the full 1380px. */}
+                    <p className="mt-2 max-w-[90ch] text-[15px] leading-relaxed text-ink">{result.answer}</p>
                   </div>
                   <div className="shrink-0 sm:pt-5">
                     <ConfidenceBadge confidence={result.confidence} />
@@ -186,7 +195,8 @@ export function HomeClient() {
 
                 {result.conflicts.length > 0 && <ConflictPanel conflicts={result.conflicts} />}
 
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
+                {/* 320px sidebar matches the homepage's own column width. */}
+                <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[320px_1fr] lg:gap-8">
                   <InterpretationPanel interpretation={result.interpretation} />
 
                   <div className="space-y-4">
@@ -235,7 +245,7 @@ export function HomeClient() {
                     <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
                       Recommended next steps
                     </h2>
-                    <ol className="mt-3 space-y-2">
+                    <ol className="mt-3 max-w-[90ch] space-y-2">
                       {result.nextSteps.map((step, i) => (
                         <li key={i} className="flex gap-3 text-sm text-ink">
                           <span className="font-mono text-xs text-ink-faint">{String(i + 1).padStart(2, "0")}</span>
@@ -251,7 +261,7 @@ export function HomeClient() {
                     <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
                       Uncertainty &amp; limitations
                     </h2>
-                    <ul className="mt-2 space-y-1 text-sm text-ink-soft">
+                    <ul className="mt-2 max-w-[90ch] space-y-1 text-sm text-ink-soft">
                       {result.limitations.map((l, i) => (
                         <li key={i} className="flex gap-2">
                           <span className="text-ink-faint">•</span>
