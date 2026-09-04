@@ -66,8 +66,54 @@ export function LaboratoryMap({ laboratories }: LaboratoryMapProps) {
     );
   }
 
-  // Default to geographic center of India or the first lab's location
-  const defaultCenter = [laboratories[0].lat, laboratories[0].lng] as [number, number];
+  // Only laboratories with a real coordinate can be placed on a map. The
+  // BIS recognised-laboratories source carries none, so in practice this is
+  // usually empty — and an empty map is the honest outcome. Inventing a pin
+  // would put a real, named laboratory somewhere it is not.
+  const mappable = laboratories.filter(
+    (l): l is typeof l & { lat: number; lng: number } =>
+      typeof l.lat === "number" && typeof l.lng === "number",
+  );
+
+  if (mappable.length === 0) {
+    return (
+      <div className="rounded-lg border border-slate-200 bg-slate-50 p-6">
+        <h3 className="text-lg font-medium text-slate-700">
+          {laboratories.length} recognised laborator{laboratories.length === 1 ? "y" : "ies"}
+        </h3>
+        <p className="mt-1 text-sm text-slate-500">
+          The BIS recognised-laboratories directory lists these by name, city and
+          state. It does not publish coordinates, so they are not shown on a map.
+        </p>
+        <ul className="mt-4 divide-y divide-slate-200 border-t border-slate-200">
+          {laboratories.slice(0, 12).map((lab, i) => (
+            <li key={i} className="py-2">
+              <p className="text-sm font-semibold text-slate-800">{lab.name}</p>
+              <p className="text-xs text-slate-500">
+                {[lab.city, lab.state].filter((v) => v && v !== "Unknown").join(", ")}
+              </p>
+            </li>
+          ))}
+        </ul>
+        {laboratories.length > 12 && (
+          <p className="mt-3 text-xs text-slate-500">
+            and {laboratories.length - 12} more.
+          </p>
+        )}
+        <a
+          href="https://www.bis.gov.in/laboratorys/list-of-bis-recognized-lab/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-block text-sm font-semibold text-navy hover:underline"
+        >
+          Open the official BIS laboratory directory
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+      </div>
+    );
+  }
+
+  const defaultCenter = [mappable[0].lat, mappable[0].lng] as [number, number];
 
   return (
     <div className="h-[400px] w-full rounded-lg overflow-hidden border border-slate-200 shadow-sm z-0">
@@ -76,25 +122,31 @@ export function LaboratoryMap({ laboratories }: LaboratoryMapProps) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {laboratories.map((lab, i) => (
+        {mappable.map((lab, i) => (
           <Marker key={i} position={[lab.lat, lab.lng]} icon={customIcon ?? undefined}>
             <Popup>
               <div className="p-1">
                 <h4 className="font-semibold text-slate-800 text-sm">{lab.name}</h4>
                 <p className="text-xs text-slate-500 mt-1">{lab.city}, {lab.state}</p>
-                <div className="mt-2 pt-2 border-t border-slate-100">
-                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Testing Capabilities</span>
-                  <ul className="mt-1 space-y-1">
-                    {lab.testingCapabilities.map((cap, j) => (
-                      <li key={j} className="text-xs text-slate-700 flex items-start gap-1">
-                        <svg className="w-3 h-3 text-green-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>{cap}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {/* Rendered only when the source actually states a scope.
+                    Previously every laboratory was given the same two
+                    hardcoded capabilities, which asserted a testing scope
+                    the recognition directory does not publish. */}
+                {lab.testingCapabilities && lab.testingCapabilities.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-slate-100">
+                    <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Testing Capabilities</span>
+                    <ul className="mt-1 space-y-1">
+                      {lab.testingCapabilities.map((cap, j) => (
+                        <li key={j} className="text-xs text-slate-700 flex items-start gap-1">
+                          <svg className="w-3 h-3 text-green-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span>{cap}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </Popup>
           </Marker>

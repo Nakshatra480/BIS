@@ -127,9 +127,21 @@ export interface ComplianceMap {
     name: string;
     city: string;
     state: string;
-    lat: number;
-    lng: number;
-    testingCapabilities: string[];
+    /**
+     * Present only when a real coordinate is known. The BIS recognised-
+     * laboratories source carries no coordinates, so these are normally
+     * absent — see src/lib/laboratories.ts. They must never be synthesised:
+     * a plausible-looking pin on a map is a claim about where a real,
+     * named laboratory is.
+     */
+    lat?: number;
+    lng?: number;
+    /**
+     * Present only when the source states it. The source is a status
+     * directory with no per-standard testing scope, so this is normally
+     * absent rather than guessed.
+     */
+    testingCapabilities?: string[];
   }[];
 }
 

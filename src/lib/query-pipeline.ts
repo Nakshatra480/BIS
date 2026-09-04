@@ -500,19 +500,16 @@ function generateComplianceMap(productName: string, recommendations: Recommendat
           }
           const state = fields[2].trim();
           
-          let lat = 20 + Math.random() * 10;
-          let lng = 70 + Math.random() * 15;
-          if (city?.toLowerCase().includes("delhi") || state.toLowerCase().includes("delhi")) { lat = 28.6139; lng = 77.2090; }
-          else if (city?.toLowerCase().includes("mumbai") || state.toLowerCase().includes("maharashtra")) { lat = 19.0760; lng = 72.8777; }
-          
-          map.laboratories.push({
-            name,
-            city,
-            state,
-            lat,
-            lng,
-            testingCapabilities: ["Electrical Safety & Performance", "Mechanical Strength"]
-          });
+          // No coordinates and no capabilities are emitted here. The source
+          // CSV is a recognition-status directory: it carries neither. The
+          // previous implementation generated `20 + Math.random() * 10` for
+          // latitude, so a real, named laboratory was pinned at a different
+          // random point on every request, and asserted the same two testing
+          // capabilities for every one of them. Both are exactly the
+          // fabricated laboratory information the project forbids, and the
+          // existing trust-regression test did not catch it because that
+          // test guards /api/v1/find-laboratories, not this path.
+          map.laboratories.push({ name, city, state });
         }
       }
     }
