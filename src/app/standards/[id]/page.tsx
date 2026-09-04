@@ -242,7 +242,12 @@ export default async function StandardDetailPage({ params }: { params: Promise<{
   const askQuery = encodeURIComponent(`Tell me about ${standard.standardNumber ?? standard.title}`);
 
   const hasIndexedDocument = standard.chunks.length > 0;
+  // Three states, not two. `scheme` is null when this standard has no entry
+  // in the certification-scheme dataset, and absence of data is not evidence
+  // that a standard is voluntary — telling a manufacturer "Voluntary" when we
+  // simply do not know could lead them to skip mandatory certification.
   const isMandatory = scheme?.mandatoryQco === true;
+  const isVoluntary = scheme != null && scheme.mandatoryQco !== true;
   const verificationLabel = scheme?.verificationStatus
     ? (VERIFICATION_STATUS_LABELS[scheme.verificationStatus] ?? scheme.verificationStatus)
     : "Verified Record";
@@ -356,12 +361,17 @@ export default async function StandardDetailPage({ params }: { params: Promise<{
 
               <div className="p-3.5 sm:p-4">
                 <p className="text-[10px] font-black uppercase tracking-widest text-ink-faint">Regulatory Status</p>
-                <p className="mt-1 font-bold text-ink">{isMandatory ? "Compulsory / QCO" : "Voluntary Reference"}</p>
+                <p className="mt-1 font-bold text-ink">
+                  {isMandatory ? "Compulsory / QCO" : isVoluntary ? "Voluntary Reference" : "Not established"}
+                </p>
               </div>
 
               <div className="p-3.5 sm:p-4">
                 <p className="text-[10px] font-black uppercase tracking-widest text-ink-faint">Certification</p>
-                <p className="mt-1 font-bold text-ink truncate">{scheme?.scheme ?? "Scheme-I (ISI)"}</p>
+                {/* Never defaults to a scheme. Naming "Scheme-I (ISI)" for a
+                    standard with no scheme record asserts a certification
+                    route this system has no evidence for. */}
+                <p className="mt-1 font-bold text-ink truncate">{scheme?.scheme ?? "Not established"}</p>
               </div>
 
               <div className="p-3.5 sm:p-4">
@@ -441,10 +451,18 @@ export default async function StandardDetailPage({ params }: { params: Promise<{
                       <tr>
                         <td className="py-3 px-4 font-bold text-navy">Compulsory QCO Status</td>
                         <td className="py-3 px-4 text-ink font-semibold">
-                          {isMandatory ? "Mandatory Quality Control Order (QCO)" : "Voluntary Standard Reference"}
+                          {isMandatory
+                            ? "Mandatory Quality Control Order (QCO)"
+                            : isVoluntary
+                              ? "Voluntary Standard Reference"
+                              : "Not established in this dataset"}
                         </td>
                         <td className="py-3 px-4 text-ink-soft hidden sm:table-cell">
-                          {isMandatory ? "Section 16, BIS Act 2016" : "Voluntary Conformity"}
+                          {isMandatory
+                            ? "Section 16, BIS Act 2016"
+                            : isVoluntary
+                              ? "Voluntary Conformity"
+                              : "No certification-scheme record — check the official BIS QCO list"}
                         </td>
                       </tr>
 
