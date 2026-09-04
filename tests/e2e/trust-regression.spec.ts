@@ -59,21 +59,25 @@ test("7. No map coordinates are fabricated when the provider is unconfigured", a
   expect(body.mapProvider.geocoded).toBeNull();
 });
 
-test("7b. The compliance map fabricates neither laboratory coordinates nor testing capabilities", async ({ request }) => {
+test("7b. The compliance map fabricates neither laboratory coordinates, capabilities, nor randomised data", async ({ request }) => {
   // This guard exists because test 7 did not catch a real defect: it checks
   // /api/v1/find-laboratories, while the Product Compliance Map is built in
-  // query-pipeline.ts and never touches that route. That path was assigning
+  // query-pipeline.ts and never touches that route. That path assigned
   // `20 + Math.random() * 10` as latitude — a real, named laboratory pinned
-  // at a different random point on every request — and asserting the same
-  // two testing capabilities for every laboratory in the directory.
-  const res = await request.post("/api/v1/query", { data: { query: KNOWN_QUERIES.exactStandard } });
-  expect(res.ok()).toBeTruthy();
-  const body = await res.json();
+  // at a different random point on every request — and asserted the same two
+  // testing capabilities for every laboratory in the directory.
+  //
+  // Two calls, not three: /api/v1/query takes ~15-20s, and an earlier
+  // three-call version exhausted the request context before finishing.
+  test.setTimeout(180_000);
 
-  const labs = body.complianceMap?.laboratories ?? [];
-  for (const lab of labs) {
+  const first = await request.post("/api/v1/query", { data: { query: KNOWN_QUERIES.exactStandard } });
+  expect(first.ok()).toBeTruthy();
+  const labsA = (await first.json()).complianceMap?.laboratories ?? [];
+
+  for (const lab of labsA) {
     // The BIS recognised-laboratories source publishes neither, so absent is
-    // the only correct value. A coordinate here would be invented.
+    // the only correct value. Anything here would have been invented.
     expect(lab.lat, `${lab.name} must not carry an invented latitude`).toBeUndefined();
     expect(lab.lng, `${lab.name} must not carry an invented longitude`).toBeUndefined();
     expect(
@@ -81,19 +85,13 @@ test("7b. The compliance map fabricates neither laboratory coordinates nor testi
       `${lab.name} must not assert a testing scope the directory does not publish`,
     ).toBeUndefined();
   }
-});
 
-test("7c. The same query twice returns identical laboratory data — nothing is randomised", async ({ request }) => {
-  // Randomised fabrication is detectable by repetition: the defect this
-  // guards against produced different coordinates for the same laboratory
-  // on every request.
-  const [a, b] = await Promise.all([
-    request.post("/api/v1/query", { data: { query: KNOWN_QUERIES.exactStandard } }),
-    request.post("/api/v1/query", { data: { query: KNOWN_QUERIES.exactStandard } }),
-  ]);
-  const labsA = (await a.json()).complianceMap?.laboratories ?? [];
-  const labsB = (await b.json()).complianceMap?.laboratories ?? [];
-  expect(JSON.stringify(labsA)).toBe(JSON.stringify(labsB));
+  // Randomised fabrication is detectable by repetition: the defect produced
+  // different coordinates for the same laboratory on every request.
+  const second = await request.post("/api/v1/query", { data: { query: KNOWN_QUERIES.exactStandard } });
+  expect(second.ok()).toBeTruthy();
+  const labsB = (await second.json()).complianceMap?.laboratories ?? [];
+  expect(JSON.stringify(labsB)).toBe(JSON.stringify(labsA));
 });
 
 test("8. 'Current' status is never rendered unless backed by real data (no version/status evidence exists in this corpus)", async ({ page }) => {
