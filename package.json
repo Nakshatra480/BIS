@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "app": "node scripts/run-app.mjs",
+    "all": "node scripts/run-app.mjs --test",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

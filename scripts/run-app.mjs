@@ -29,6 +29,14 @@ import path from "node:path";
 const ROOT = process.cwd();
 const PORT = Number(process.env.PORT ?? 3000);
 const FIX = process.argv.includes("--fix");
+/** Run the checks before starting. `npm run all` sets this. */
+const TEST = process.argv.includes("--test");
+/** Include the production build in the checks. Off by default: `next dev`
+ *  compiles anyway, and doubling the wait before the app starts is a poor
+ *  trade for a command whose point is to get you running. */
+const WITH_BUILD = process.argv.includes("--build");
+/** Start the app even if a check failed. */
+const FORCE = process.argv.includes("--force");
 
 const problems = [];
 const notes = [];
@@ -205,6 +213,54 @@ if (problems.length > 0) {
 }
 
 for (const n of notes) console.log(`\x1b[33mNote:\x1b[0m ${n}`);
+
+if (TEST) {
+  const stages = [
+    { name: "lint", cmd: "npm run lint" },
+    { name: "typecheck", cmd: "npm run typecheck" },
+    { name: "ML pipeline tests", cmd: "npm run test:ml" },
+    { name: "unit tests", cmd: "npm run test:unit" },
+  ];
+  if (WITH_BUILD) stages.push({ name: "production build", cmd: "npm run build" });
+
+  console.log("\nRunning checks before starting.\n");
+  const failures = [];
+
+  for (const stage of stages) {
+    process.stdout.write(`  … ${stage.name}`);
+    const started = Date.now();
+    try {
+      // Captured rather than streamed: four stages of interleaved output is
+      // unreadable, and the only part worth showing is a failure's tail.
+      execSync(stage.cmd, { stdio: "pipe", encoding: "utf8" });
+      process.stdout.write(`\r  \x1b[32m✓\x1b[0m ${stage.name} (${secondsSince(started)}s)\n`);
+    } catch (err) {
+      process.stdout.write(`\r  \x1b[31m✗\x1b[0m ${stage.name} (${secondsSince(started)}s)\n`);
+      failures.push({ stage: stage.name, output: `${err.stdout ?? ""}${err.stderr ?? ""}`.trimEnd() });
+    }
+  }
+
+  if (failures.length > 0) {
+    console.log(`\n\x1b[31m${failures.length} check(s) failed.\x1b[0m`);
+    for (const f of failures) {
+      console.log(`\n\x1b[1m${f.stage}\x1b[0m`);
+      // The tail is where the assertion or error actually is.
+      console.log(f.output.split("\n").slice(-25).map((l) => `  ${l}`).join("\n"));
+    }
+    if (!FORCE) {
+      console.log("\nNot starting the app. Fix the above, or re-run with --force to start anyway.\n");
+      process.exit(1);
+    }
+    console.log("\n\x1b[33m--force given: starting despite the failures above.\x1b[0m");
+  } else {
+    console.log(`\n\x1b[32mAll checks passed.\x1b[0m`);
+  }
+}
+
+function secondsSince(t) {
+  return ((Date.now() - t) / 1000).toFixed(1);
+}
+
 console.log(`\nStarting the BIS Standards Navigator on http://localhost:${PORT}\n`);
 
 const child = spawn("npx", ["next", "dev", "--port", String(PORT)], { stdio: "inherit", env: { ...process.env } });
