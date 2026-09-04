@@ -79,7 +79,7 @@ export function Footer() {
                   </p>
                   <Link
                     href={href}
-                    className="mt-3 inline-flex items-center text-[12.5px] font-bold text-blue hover:text-navy-deep hover:underline transition-colors"
+                    className="mt-3 inline-flex min-h-[24px] items-center py-0.5 text-[12.5px] font-bold text-blue hover:text-navy-deep hover:underline transition-colors"
                   >
                     {col.cta}
                   </Link>
@@ -122,11 +122,11 @@ export function Footer() {
             {/* These three render BIS's own published text in-app (see
                 src/lib/policy-pages.ts), so they stay internal links rather
                 than sending the reader off to bis.gov.in mid-session. */}
-            <Link href="/privacy-policy" className="hover:text-white transition-colors">{t.footer.privacy}</Link>
+            <Link href="/privacy-policy" className="inline-flex min-h-[24px] items-center py-0.5 hover:text-white transition-colors">{t.footer.privacy}</Link>
             <span aria-hidden="true" className="opacity-30">|</span>
-            <Link href="/terms-and-conditions" className="hover:text-white transition-colors">{t.footer.terms}</Link>
+            <Link href="/terms-and-conditions" className="inline-flex min-h-[24px] items-center py-0.5 hover:text-white transition-colors">{t.footer.terms}</Link>
             <span aria-hidden="true" className="opacity-30">|</span>
-            <Link href="/accessibility-statement" className="hover:text-white transition-colors">{t.footer.accessibility}</Link>
+            <Link href="/accessibility-statement" className="inline-flex min-h-[24px] items-center py-0.5 hover:text-white transition-colors">{t.footer.accessibility}</Link>
           </p>
 
         </div>

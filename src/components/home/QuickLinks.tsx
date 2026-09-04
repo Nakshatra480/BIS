@@ -29,7 +29,7 @@ export function QuickLinks() {
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between text-[13.5px] font-bold text-blue hover:text-navy transition-colors"
+                className="flex min-h-[24px] items-center justify-between py-0.5 text-[13.5px] font-bold text-blue hover:text-navy transition-colors"
               >
                 <span>{link.label}</span>
                 <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
@@ -37,7 +37,7 @@ export function QuickLinks() {
             ) : (
               <Link
                 href={link.href}
-                className="flex items-center justify-between text-[13.5px] font-bold text-blue hover:text-navy transition-colors"
+                className="flex min-h-[24px] items-center justify-between py-0.5 text-[13.5px] font-bold text-blue hover:text-navy transition-colors"
               >
                 <span>{link.label}</span>
               </Link>

@@ -70,7 +70,7 @@ export function WhatsNew() {
         </div>
         <Link
           href="/standards"
-          className="flex items-center gap-1 text-xs font-semibold text-blue hover:underline"
+          className="min-h-[24px] py-0.5 flex items-center gap-1 text-xs font-semibold text-blue hover:underline"
         >
           <span>{t.whatsnew.viewAll}</span>
           <ArrowRightIcon className="h-3 w-3" />
@@ -115,7 +115,7 @@ export function WhatsNew() {
         <span className="text-[11px] text-ink-faint">Verified against Gazette Orders</span>
         <Link
           href="/standards"
-          className="text-xs font-bold text-blue hover:underline flex items-center gap-1"
+          className="inline-flex min-h-[24px] items-center gap-1 py-0.5 text-xs font-bold text-blue hover:underline"
         >
           <span>Browse All 22+ Standards</span>
           <ArrowRightIcon className="h-3 w-3" />

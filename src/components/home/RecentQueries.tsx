@@ -77,7 +77,7 @@ export function RecentQueries({ onRerun }: { onRerun?: (query: string) => void }
               Clear history
             </button>
           )}
-          <Link href="/search" className="flex items-center gap-1 text-xs font-bold text-blue hover:underline">
+          <Link href="/search" className="min-h-[24px] py-0.5 flex items-center gap-1 text-xs font-bold text-blue hover:underline">
             {t.recent.viewAll} <span className="text-[10px]">→</span>
           </Link>
         </div>

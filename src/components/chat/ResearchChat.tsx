@@ -65,101 +65,110 @@ export function ResearchChat({
     });
   }
 
+  // The composer is a sibling of the conversation, not a child of it.
+  // `sticky bottom-0` pins against the nearest scrolling ancestor only while
+  // that ancestor extends past the viewport — nested inside a short section
+  // at the end of a long results column, it had no room to move and simply
+  // sat below the fold, which read as the input having disappeared.
   return (
-    <section className="mt-6" aria-label="Research conversation">
-      {/* §28: what the assistant is reading, and a way to change it. */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-4">
-        <p className="text-[11px] font-extrabold uppercase tracking-wider text-ink-faint">
-          Research context ·{" "}
-          {scopeStandardNumbers.length > 0
-            ? `${scopeStandardNumbers.length} BIS source${scopeStandardNumbers.length === 1 ? "" : "s"}`
-            : "none selected"}
-        </p>
-        <button
-          type="button"
-          onClick={onManageSources}
-          className="text-[11.5px] font-bold text-navy hover:underline"
-        >
-          Manage sources
-        </button>
-      </div>
-
-      {scopeStandardNumbers.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {scopeStandardNumbers.slice(0, 8).map((n) => (
-            <span key={n} className="rounded bg-navy/10 px-1.5 py-0.5 font-mono text-[10.5px] font-bold text-navy">
-              {n}
-            </span>
-          ))}
+    <>
+      <section className="mt-6" aria-label="Research conversation">
+        {/* §28: what the assistant is reading, and a way to change it. */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-4">
+          <p className="text-[11px] font-extrabold uppercase tracking-wider text-ink-faint">
+            Research context ·{" "}
+            {scopeStandardNumbers.length > 0
+              ? `${scopeStandardNumbers.length} BIS source${scopeStandardNumbers.length === 1 ? "" : "s"}`
+              : "none selected"}
+          </p>
+          <button
+            type="button"
+            onClick={onManageSources}
+            className="text-[11.5px] font-bold text-navy hover:underline"
+          >
+            Manage sources
+          </button>
         </div>
-      )}
 
-      {/* §29: the opening line depends on whether anything is in scope. */}
-      {exchanges.length === 0 && !pending && (
-        <p className="mt-4 max-w-[60ch] text-[13.5px] leading-relaxed text-ink-soft">
-          {hasSelectedSources || scopeStandardNumbers.length > 0
-            ? "Ask about the scope, testing, certification, applicability or evidence of these sources. Answers come from indexed BIS evidence and cite where they came from."
-            : "Search and select BIS sources on the left to start a source-grounded research conversation."}
-        </p>
-      )}
+        {scopeStandardNumbers.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {scopeStandardNumbers.slice(0, 8).map((n) => (
+              <span key={n} className="rounded bg-navy/10 px-1.5 py-0.5 font-mono text-[10.5px] font-bold text-navy">
+                {n}
+              </span>
+            ))}
+          </div>
+        )}
 
-      {/* §27: one continuous session, user and assistant visibly distinct. */}
-      {exchanges.length > 0 && (
-        <ol className="mt-4 space-y-4">
-          {exchanges.map((m) => (
-            <li key={m.id} className={m.sender === "user" ? "flex justify-end" : ""}>
-              {m.sender === "user" ? (
-                <p className="max-w-[80%] rounded-2xl rounded-br-sm bg-navy px-4 py-2.5 text-[13.5px] font-medium text-white">
-                  {m.text}
-                </p>
-              ) : (
-                <div className="max-w-[85%] rounded-2xl rounded-bl-sm border border-border/70 bg-surface-raised px-4 py-3">
-                  <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                    <SourceTag provenance={m.failed ? "inference" : "ai"} />
-                    {m.scope === "global" && (
-                      <span className="rounded bg-navy/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-navy">
-                        Wider BIS search
-                      </span>
-                    )}
-                  </div>
-                  <p className={`whitespace-pre-line text-[13.5px] leading-relaxed ${m.failed ? "text-danger" : "text-ink"}`}>
+        {/* §29: the opening line depends on whether anything is in scope. */}
+        {exchanges.length === 0 && !pending && (
+          <p className="mt-4 max-w-[60ch] text-[13.5px] leading-relaxed text-ink-soft">
+            {hasSelectedSources || scopeStandardNumbers.length > 0
+              ? "Ask about the scope, testing, certification, applicability or evidence of these sources. Answers come from indexed BIS evidence and cite where they came from."
+              : "Search and select BIS sources on the left to start a source-grounded research conversation."}
+          </p>
+        )}
+
+        {/* §27: one continuous session, user and assistant visibly distinct. */}
+        {exchanges.length > 0 && (
+          <ol className="mt-4 space-y-4">
+            {exchanges.map((m) => (
+              <li key={m.id} className={m.sender === "user" ? "flex justify-end" : ""}>
+                {m.sender === "user" ? (
+                  <p className="max-w-[80%] rounded-2xl rounded-br-sm bg-navy px-4 py-2.5 text-[13.5px] font-medium text-white">
                     {m.text}
                   </p>
-                  {m.standards && m.standards.length > 0 && (
-                    <div className="mt-2.5 border-t border-border/60 pt-2">
-                      <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-faint">
-                        Evidence from
-                      </p>
-                      <div className="mt-1 flex flex-wrap gap-1.5">
-                        {m.standards.map((s, i) => (
-                          <Link
-                            key={i}
-                            href={s.id ? `/standards/${s.id}` : "#"}
-                            className="rounded bg-navy/10 px-1.5 py-0.5 font-mono text-[10.5px] font-bold text-navy hover:underline"
-                          >
-                            {s.number ?? s.title}
-                          </Link>
-                        ))}
-                      </div>
+                ) : (
+                  <div className="max-w-[85%] rounded-2xl rounded-bl-sm border border-border/70 bg-surface-raised px-4 py-3">
+                    <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                      <SourceTag provenance={m.failed ? "inference" : "ai"} />
+                      {m.scope === "global" && (
+                        <span className="rounded bg-navy/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-navy">
+                          Wider BIS search
+                        </span>
+                      )}
                     </div>
-                  )}
-                </div>
-              )}
-            </li>
-          ))}
-        </ol>
-      )}
+                    <p className={`whitespace-pre-line text-[13.5px] leading-relaxed ${m.failed ? "text-danger" : "text-ink"}`}>
+                      {m.text}
+                    </p>
+                    {m.standards && m.standards.length > 0 && (
+                      <div className="mt-2.5 border-t border-border/60 pt-2">
+                        <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-faint">
+                          Evidence from
+                        </p>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                          {m.standards.map((s, i) => (
+                            <Link
+                              key={i}
+                              href={s.id ? `/standards/${s.id}` : "#"}
+                              className="rounded bg-navy/10 px-1.5 py-0.5 font-mono text-[10.5px] font-bold text-navy hover:underline"
+                            >
+                              {s.number ?? s.title}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ol>
+        )}
 
-      {/* §25: says what it is doing, and never "Searching…" — this is not search. */}
-      {pending && (
-        <p role="status" className="mt-4 text-[13px] font-medium text-ink-soft">
-          Reading selected BIS sources and preparing an evidence-backed answer…
-        </p>
-      )}
+        {/* §25: says what it is doing, and never "Searching…" — this is not search. */}
+        {pending && (
+          <p role="status" className="mt-4 text-[13px] font-medium text-ink-soft">
+            Reading selected BIS sources and preparing an evidence-backed answer…
+          </p>
+        )}
 
-      <div ref={endRef} />
+          <div ref={endRef} />
+      </section>
 
-      {/* §26: a chat composer, not a search bar. */}
+      {/* §26: a chat composer, not a search bar. A direct child of the
+          research column, so its sticky containing block is the full-height
+          column and it pins to the bottom of the viewport. */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -194,7 +203,7 @@ export function ResearchChat({
           </button>
         </div>
       </form>
-    </section>
+    </>
   );
 }
 

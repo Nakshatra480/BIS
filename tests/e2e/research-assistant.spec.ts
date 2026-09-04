@@ -47,10 +47,13 @@ test.describe("Journey C/D: Research Assistant — scoped context, then explicit
     await page.getByRole("button", { name: "Discuss these results" }).click();
     await expect(page.getByText(`Discussing: "${KNOWN_QUERIES.exactStandard}"`)).toBeVisible();
 
-    // Run a new, different search from the compact search bar.
-    const searchInput = page.getByRole("textbox", { name: /product or compliance question/i });
-    await searchInput.fill(KNOWN_QUERIES.materialMismatch);
-    await searchInput.press("Enter");
+    // Run a new, different search. The centre no longer carries a search
+    // box — it is the research conversation — so a new query is started the
+    // way the UI now offers: from the Sources panel's source search, which
+    // is what re-runs the research pipeline.
+    const sourceSearch = page.getByLabel(/search bis standards and documents/i);
+    await sourceSearch.fill(KNOWN_QUERIES.materialMismatch);
+    await sourceSearch.press("Enter");
     await expect(page.getByText("Research Summary")).toBeVisible({ timeout: 60_000 });
 
     // The chat's context indicator must reflect the NEW query, not the old one.

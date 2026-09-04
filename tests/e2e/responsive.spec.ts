@@ -30,7 +30,7 @@ for (const bp of BREAKPOINTS) {
       await expect(page.getByText("Research Summary")).toBeVisible({ timeout: 60_000 });
     });
 
-    test("results render without horizontal overflow and the Best Match section is reachable", async ({ page }) => {
+    test("results render without horizontal overflow and the recommendation section is reachable", async ({ page }) => {
       await page.goto(`/?q=${encodeURIComponent(KNOWN_QUERIES.exactStandard)}`);
       await expect(page.getByText("Research Summary")).toBeVisible({ timeout: 60_000 });
 
@@ -39,7 +39,7 @@ for (const bp of BREAKPOINTS) {
       );
       expect(hasHorizontalScroll).toBe(false);
 
-      const bestMatch = page.getByText(/Best match|Related standard/).first();
+      const bestMatch = page.getByText(/Recommended standard|Related but not applicable/).first();
       await bestMatch.scrollIntoViewIfNeeded();
       await expect(bestMatch).toBeVisible();
     });
